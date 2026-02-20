@@ -1,0 +1,434 @@
+%!TeX TXS-program:compile = txs:///lualatex/[--shell-escape]
+%!TeX TXS-program:compile = txs:///latexmk/[-shell-escape]
+\PassOptionsToPackage{table,xcdraw}{xcolor}
+\documentclass[9pt]{nmeth}
+% Use the onehalfspacing option for 1.5 line spacing
+% Use the doublespacing option for 2.0 line spacing
+% Please note that these options may affect formatting.
+% Additionally, the use of the \newcommand function should be limited.
+\usepackage{ragged2e}
+
+\usepackage{xifthen}
+
+\usepackage[inline]{enumitem}
+\newboolean{review}
+\newboolean{linenum}
+
+\setboolean{review}{true}
+\setboolean{linenum}{true}
+
+% Template feature toggles (default: minimal build with no external tools)
+% Enable these when adding real content that needs each feature.
+\newif\iftemplatebibliography
+\templatebibliographyfalse
+\newif\iftemplatesvg
+\templatesvgfalse
+\newif\iftemplateminted
+\templatemintedfalse
+
+% Optional custom font override (LuaLaTeX/XeLaTeX).
+% Keep a single family in this example; uncomment and replace as needed.
+% \ifdefined\setmainfont
+%   \setmainfont{Your Font Family Name}
+% \fi
+
+\usepackage{lineno}
+\usepackage[version=4]{mhchem}
+\usepackage{siunitx}
+
+\usepackage{array}
+\newcolumntype{C}[1]{>{\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{M}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{N}[1]{>{\tiny\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}m{#1}}
+
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{dcolumn}
+
+\DeclareSIUnit\Molar{M}
+\DeclareSIUnit\b{\second\per\milli\meter\squared}
+
+\usepackage{xcolor}
+\usepackage{graphicx}
+\iftemplatesvg
+  % Safe default for template mode: load svg package without Inkscape conversion.
+  % Switch to `inkscape=true` if you need on-the-fly SVG conversion.
+  \usepackage[inkscape=false,inkscapeversion=1]{svg}
+\fi
+\usepackage{soul}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usetikzlibrary{shapes.misc}
+\usetikzlibrary{fit}
+
+\iftemplateminted
+  % Requires shell-escape and a working Pygments installation.
+  \usepackage{minted}
+  % \usemintedstyle{monokai}
+  \setminted{bgcolor=white!5}
+  % \captionsetup[table]{skip=0pt}
+\fi
+
+\usepackage{placeins}
+\usepackage{lettrine}
+\usepackage{xspace, setspace}
+
+\ifthenelse{\boolean{review}}
+{
+  \setboolean{linenum}{true}
+  \colorlet{revcolor}{blue!70}
+  \usepackage[colorinlistoftodos,textsize=tiny, textwidth=4.2cm]{todonotes}
+  \newcommand{\revcomment}[2][]{%
+    \ifthenelse{\equal{#1}{}}{}{\todo{\setstretch{0.2} #1}}%
+    \begingroup \color{revcolor} #2\endgroup%
+  }
+
+  \newcommand{\revinline}[2][]{%
+    \ifthenelse{\equal{#1}{}}{}{\todo[inline, inlinewidth=0.7cm, noinlinepar]{#1}}%
+    \begingroup \color{revcolor} #2\endgroup%
+  }
+  
+  \renewcommand{\baselinestretch}{1.5} 
+  \setstcolor{red}
+  \let\cancel\st
+}
+{
+  \definecolor{revcolor}{gray}{0.0}
+  \newcommand{\todo}[2][]{}
+  \newcommand{\revcomment}[2][]{#2}
+  \newcommand{\revinline}[2][]{#2}
+  \newcommand{\cancel}[2][]{}
+  \renewcommand{\baselinestretch}{1.0}
+}
+
+\usepackage{marginnote}
+
+\newcommand\wordcount{%
+    \immediate\write18{texcount main.tex > 'count.txt'}%
+(\verbatiminput{count.txt}words)}
+
+% \newcommand\wordcount{%
+%     \immediate\write18{texcount -sub=section main.tex  | grep "Section" | sed -e 's/+.*//' | sed -n \thesection p > 'count.txt'}%
+% (\input{count.txt}words)}
+
+\newcommand{\detailtexcount}[1]{%
+  \immediate\write18{texcount -merge -sum -q #1.tex output.bbl > #1.wcdetail }%
+  \verbatiminput{#1.wcdetail}%
+}
+
+\colorlet{verylightgray}{lightgray!15}
+
+% Create an inline list environment
+\newlist{inlinelist}{enumerate*}{1}
+\setlist*[inlinelist,1]{%
+  label=(\roman*),
+}
+
+% Make the font in the SI commands match the text font
+\sisetup{detect-all}
+
+% Define some colors
+\definecolor{whitesmoke}{rgb}{0.96, 0.96, 0.96}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% ARTICLE SETUP
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{%
+\textit{Paper Title Placeholder}: Subtitle Placeholder
+}
+
+\author[1\space\faIcon{envelope}]{Maya Thompson}
+\author[2]{Daniel Rivera}
+\author[1]{Priya Nair}
+\author[3]{Lucas Bennett}
+\author[4]{Elena Kovacs}
+
+\affil[1]{Department of Biomedical Engineering, North River Institute of Technology, Portland, OR, USA}
+\affil[2]{Department of Biostatistics, Summit Coast University, Boston, MA, USA}
+\affil[3]{Center for Brain Imaging, Lakeview Medical College, Chicago, IL, USA}
+\affil[4]{Department of Psychiatry, Redwood State University School of Medicine, Seattle, WA, USA}
+
+\contrib{\faIcon{envelope}\space Corresponding author}
+\corr{maya.thompson@example.org}{\faIcon{envelope}}
+
+% \contrib[\authfn{1}]{These authors contributed equally to this work}
+% \contrib[\authfn{2}]{These authors also contributed equally to this work}
+% \presentadd[\authfn{1}]{Department of Psychology, Stanford University, CA, USA}
+\makeatletter
+\newbox\mybox
+\newcount\test
+\test0
+\newcommand{\defcoder}[3][]{%
+    \tikzset{every coder/.style={text=magenta,color=black!20, fill opacity=0.3, #1}}%
+}
+
+\defcoder[]{}{}
+
+\newcommand{\code@DoHighlight}[1]{
+    \node[outer sep = -13pt, inner sep = 0pt,
+        fit=(begin code) (end code),
+        every coder, this coder,
+        rounded rectangle,#1,
+        fill
+    ]{} ;
+}
+
+\newcommand{\code@BeginHighlight}[1]{
+  \coordinate[yshift=-\dp\mybox-1pt,#1] (begin code) at (0,0) ;
+}
+
+\newcommand{\code@EndHighlight}[1]{
+  \coordinate[yshift=\ht\mybox+1pt,#1 ] (end code) at (0,0) ;
+}
+
+\newdimen\code@previous
+\newdimen\code@current
+
+\DeclareRobustCommand*\code[2][]{%
+  \setbox\mybox\hbox{#2}
+  \tikzset{this coder/.style={#1}}%
+  \SOUL@setup
+  %
+  \gdef\ht@possiblenoleftround{}
+  \def\SOUL@preamble{%
+    \begin{tikzpicture}[overlay, remember picture]
+      \code@BeginHighlight{xshift=3pt}
+      \code@EndHighlight{xshift=-3pt}
+    \end{tikzpicture}%
+  }%
+  %
+  \def\SOUL@postamble{%
+    \begin{tikzpicture}[overlay, remember picture]
+      \code@EndHighlight{xshift=-3pt}
+      \expandafter\code@DoHighlight\expandafter{\ht@possiblenoleftround}
+    \end{tikzpicture}%
+  }%
+  %
+  \def\SOUL@everyhyphen{%
+    \discretionary{%
+      \SOUL@setkern\SOUL@hyphkern
+      \SOUL@sethyphenchar
+      \tikz[overlay, remember picture] \code@EndHighlight{} ;%
+    }{%
+    }{%
+      \SOUL@setkern\SOUL@charkern
+    }%
+  }%
+  %
+  \def\SOUL@everyexhyphen##1{%
+    \SOUL@setkern\SOUL@hyphkern
+    \hbox{##1}%
+    \discretionary{%
+      \tikz[overlay, remember picture] \code@EndHighlight{} ;%
+    }{%
+    }{%
+      \SOUL@setkern\SOUL@charkern
+    }%
+  }%
+  %
+  \def\SOUL@everysyllable{%
+    \begin{tikzpicture}[overlay, remember picture]
+      \path let \p0 = (begin code), \p1 = (0,0) in \pgfextra
+        \global\code@previous=\y0
+        \global\code@current =\y1
+      \endpgfextra (0,0) ;
+      \ifdim\code@current < \code@previous
+        \expandafter\code@DoHighlight\expandafter{\ht@possiblenoleftround,rounded rectangle right arc=none}
+        \gdef\ht@possiblenoleftround{rounded rectangle left arc=none}
+        \code@BeginHighlight{}
+      \fi
+    \end{tikzpicture}%
+    \ttfamily\color{magenta}\the\SOUL@syllable
+    \tikz[overlay, remember picture] \code@EndHighlight{} ;%
+  }%
+  \SOUL@{#2}
+}
+\makeatother
+
+\makeatletter
+\renewcommand*\refstepcounter[1]{\stepcounter{#1}%
+\protected@edef\@currentlabel
+{\csname p@#1\expandafter\endcsname\csname the#1\endcsname}}
+%\newcounter{supplbox}
+%\def\supplboxautorefname{Suppl. Box}
+
+\runningtitle{ANALYSIS}
+
+\newcommand{\discidx}{{\fontfamily{qcr}\selectfont
+Discr%
+}}
+\makeatother
+
+\newcommand{\eg}{e.g.,\xspace}
+\newcommand{\etc}{etc.\xspace}
+\newcommand{\ie}{i.e.,\xspace}
+
+\newcommand{\invivo}{\textit{in vivo}\xspace}
+
+\newcommand{\bspline}{B-Spline\xspace}
+
+\newcommand{\bvals}{$b$-values\xspace}
+\newcommand{\bvecs}{$b$-vectors\xspace}
+\newcommand{\qspace}{$q$-space\xspace}
+
+\newcommand{\threedvolreg}{\textit{3dVolreg}\xspace}
+\newcommand{\afni}{\textit{AFNI}\xspace}
+\newcommand{\ants}{\textit{ANTs}}
+\newcommand{\antsreg}{\textit{antsRegistration}\xspace}
+\newcommand{\datalad}{\textit{DataLad}\xspace}
+\newcommand{\dipy}{\textit{DIPY}}
+\newcommand{\dockerhub}{\textit{Docker Hub}\xspace}
+\newcommand{\eddy}{\textit{eddy}\xspace}
+\newcommand{\fmriprep}{\textit{fMRIPrep}\xspace}
+\newcommand{\fsl}{\textit{FSL}\xspace}
+\newcommand{\git}{\textit{git}\xspace}
+\newcommand{\gitannex}{\textit{git-annex}\xspace}
+\newcommand{\githubpackreg}{\textit{GitHub Package registry}\xspace}
+\newcommand{\mcflirt}{\textit{MCFLIRT}\xspace}
+\newcommand{\nifreeze}{\textit{NiFreeze}\xspace}
+\newcommand{\nufo}{NuFO\xspace}
+\newcommand{\openneuro}{\textit{OpenNeuro}\xspace}
+\newcommand{\qsiprep}{\textit{QSIPrep}\xspace}
+\newcommand{\qsirecon}{\textit{QSIRecon}\xspace}
+\newcommand{\scikitlearn}{\textit{scikit-learn}\xspace}
+\newcommand{\shoreline}{\textit{SHORELine}\xspace}
+\newcommand{\smacthree}{\textit{SMAC3}\xspace}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% ARTICLE START
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\maketitle
+\begin{abstract}
+% Nature Computational Science (Analysis): typically 100--150 words, no references.
+This is a placeholder abstract.
+Replace this text with a concise summary of the manuscript motivation, methods, main results, and conclusions.
+\end{abstract}
+
+\newpage
+
+\ifthenelse{\boolean{linenum}}
+{
+  \linenumbers
+}
+{
+}
+\lettrine{T}\-his is placeholder introductory text for an Analysis manuscript.
+Replace with an unheaded introduction that defines the question, establishes context,
+and states the main contributions.
+
+This section should remain as plain paragraphs with no ``Introduction'' heading,
+following Nature Computational Science Analysis format.
+
+\section{Results}
+\label{sec:results}
+
+\subsection{Primary finding placeholder}
+\label{subsec:results_primary}
+
+Placeholder text describing the primary result of the analysis.
+Replace with concise, evidence-driven statements that reference figures/tables.
+
+\begin{figure}[h!]
+  \centering
+  \fbox{\rule{0pt}{2.5in}\rule{0.95\textwidth}{0pt}}
+  \caption[Figure 1 placeholder]{%
+  \textbf{Figure 1 | Placeholder title.}
+  Replace with the main result figure and a complete legend.
+  }
+  \label{fig:result1}
+\end{figure}
+
+\subsection{Comparative analysis placeholder}
+\label{subsec:results_comparative}
+
+Placeholder text for secondary or comparative analyses.
+Replace with additional quantitative findings and robustness checks.
+
+\begin{table}[h!]
+\caption{Table 1 | Placeholder summary of key metrics.}
+\label{tab:result1}
+\small
+\begin{tabular}{p{0.45\textwidth} p{0.2\textwidth} p{0.2\textwidth}}
+\toprule[\cmidrulewidth]
+\textbf{Metric} & \textbf{Condition A} & \textbf{Condition B} \\
+\toprule[\cmidrulewidth]
+Placeholder metric 1 & -- & -- \\
+Placeholder metric 2 & -- & -- \\
+\bottomrule[\cmidrulewidth]
+\end{tabular}
+\end{table}
+
+\section{Discussion}
+\label{sec:discussion}
+
+Placeholder discussion text.
+Replace with interpretation of findings, implications, limitations, and future directions.
+For Analysis manuscripts, keep Discussion as continuous prose without subheadings.
+
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Study design and data sources}
+\label{subsec:methods_design}
+
+Placeholder text for data sources, inclusion criteria, preprocessing inputs, and study design.
+
+\subsection{Data processing workflow}
+\label{subsec:methods_processing}
+
+Placeholder text for computational workflow, model setup, and quality control.
+
+\subsection{Statistical analysis}
+\label{subsec:methods_statistics}
+
+Placeholder text for statistical models, uncertainty quantification,
+multiple-testing control, and software versions.
+
+\clearpage
+
+\section*{Data availability}
+\label{sec:data_availability}
+
+Placeholder text for data accessibility and repository identifiers.
+
+\section*{Code availability}
+\label{sec:code_availability}
+
+Placeholder text for code repository URLs, version tags, and licenses.
+
+\section*{Acknowledgements}
+\label{sec:acknowledgements}
+
+Placeholder text for funding, institutional support, and acknowledgements.
+
+\section*{Author contributions}
+\label{sec:author_contributions}
+
+Conceptualization: placeholder.
+Methodology: placeholder.
+Software: placeholder.
+Investigation: placeholder.
+Writing -- original draft: placeholder.
+Writing -- review \& editing: placeholder.
+Supervision: placeholder.
+
+\subsection*{Diversity, Equity, and Inclusion statement}
+\label{sec:dei_statement}
+
+We are committed to fostering diversity, equity, and inclusion throughout this work.
+Study design, collaboration practices, and dissemination plans were developed to reduce barriers to participation and to support equitable access to methods and results.
+Future iterations of this project will continue to evaluate representation, accessibility, and inclusion across all project stages.
+
+\section*{Competing interests}
+\label{sec:competing_interests}
+
+The authors declare no competing interests.
+%TC:endignore
+
+\iftemplatebibliography
+\bibliography{references}
+\fi
+
+\end{document}

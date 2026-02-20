@@ -1,0 +1,15 @@
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.pdf
+*.suppinfo
+minimized.bib-save-*
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+.texmf-var/
+.texmf-cache/
+_minted-*/
+*.w18
